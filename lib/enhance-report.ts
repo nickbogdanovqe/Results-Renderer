@@ -42,6 +42,7 @@ export function enhanceReportHtml(html: string): string {
       <option value="none">None</option>
       <option value="result">Result</option>
       <option value="endpoint">Endpoint</option>
+      <option value="status">Status code</option>
     </select>
   </label>
   <label>Sort
@@ -106,6 +107,20 @@ export function enhanceReportHtml(html: string): string {
       return method ? method + " " + path : path;
     }
 
+    function statusCodeOf(tr) {
+      var nums = tr.querySelectorAll("td.num");
+      if (nums.length) {
+        var code = String(nums[0].textContent || "").trim();
+        if (code) return code;
+      }
+      var cells = tr.querySelectorAll("td");
+      if (cells.length >= 5) {
+        var fallback = String(cells[4].textContent || "").trim();
+        if (fallback) return fallback;
+      }
+      return "(unknown)";
+    }
+
     var RESULT_RANK = {
       "fail-first": { fail: 0, skip: 1, pass: 2, unknown: 3 },
       "pass-first": { pass: 0, skip: 1, fail: 2, unknown: 3 }
@@ -132,6 +147,12 @@ export function enhanceReportHtml(html: string): string {
       return tr;
     }
 
+    function keyFnFor(groupBy) {
+      if (groupBy === "result") return resultOf;
+      if (groupBy === "status") return statusCodeOf;
+      return endpointOf;
+    }
+
     function apply() {
       var groupEl = document.getElementById("rr-group");
       var sortEl = document.getElementById("rr-sort");
@@ -148,7 +169,7 @@ export function enhanceReportHtml(html: string): string {
         return;
       }
 
-      var keyFn = groupBy === "result" ? resultOf : endpointOf;
+      var keyFn = keyFnFor(groupBy);
       var buckets = {};
       var order = [];
       working.forEach(function (tr) {
@@ -167,13 +188,24 @@ export function enhanceReportHtml(html: string): string {
         order = preferred.filter(function (k) { return buckets[k]; }).concat(
           order.filter(function (k) { return preferred.indexOf(k) === -1; })
         );
+      } else if (groupBy === "status") {
+        order.sort(function (a, b) {
+          var na = parseInt(a, 10);
+          var nb = parseInt(b, 10);
+          var aNum = !isNaN(na);
+          var bNum = !isNaN(nb);
+          if (aNum && bNum && na !== nb) return na - nb;
+          if (aNum !== bNum) return aNum ? -1 : 1;
+          return a.localeCompare(b);
+        });
       } else {
         order.sort(function (a, b) { return a.localeCompare(b); });
       }
 
       order.forEach(function (key) {
         var list = buckets[key] || [];
-        tbody.appendChild(groupHeader(key, list.length));
+        var label = groupBy === "status" && key !== "(unknown)" ? "HTTP " + key : key;
+        tbody.appendChild(groupHeader(label, list.length));
         list.forEach(function (tr) { tbody.appendChild(tr); });
       });
     }

@@ -10,7 +10,7 @@ Hosted entirely on **Vercel Hobby** with **Vercel Blob**. No other services.
 - Organized by environment tabs: `TST` and `DEV`
 - Each upload stores a timestamped copy plus overwrites `latest` for that env
 - Delete any report from the home list (per environment)
-- Shareable viewer URLs with **Group by** (Result / Endpoint) and **Sort** (Failed first / Passed first):
+- Shareable viewer URLs with **Group by** (Result / Endpoint / Status code) and **Sort** (Failed first / Passed first):
   - Latest: `/r/TST/latest` or `/r/DEV/latest`
   - Specific: `/r/TST/<timestamp>-filename.html`
 - Open access (anyone with the site URL can upload, view, and delete)
