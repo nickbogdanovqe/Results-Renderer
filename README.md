@@ -9,10 +9,11 @@ Hosted entirely on **Vercel Hobby** with **Vercel Blob**. No other services.
 - Drag-and-drop (or file picker) upload of `.html` reports (max 2MB)
 - Organized by environment tabs: `TST` and `DEV`
 - Each upload stores a timestamped copy plus overwrites `latest` for that env
-- Shareable viewer URLs:
+- Delete any report from the home list (per environment)
+- Shareable viewer URLs with **Group by** (Result / Endpoint) and **Sort** (Failed first / Passed first):
   - Latest: `/r/TST/latest` or `/r/DEV/latest`
   - Specific: `/r/TST/<timestamp>-filename.html`
-- Open access (anyone with the site URL can upload and view)
+- Open access (anyone with the site URL can upload, view, and delete)
 
 ## Local development
 
@@ -40,7 +41,7 @@ Sample reports live in [`samples/`](samples/) — upload them from the UI after 
 
 ### Optional: seed sample reports
 
-After deploy, open the site and upload files from `samples/` (for example `latest-TST.html`). They will appear under the `TST` tab, and `/r/TST/latest` will point at the newest upload.
+After deploy, open the site and upload files from `samples/` (for example `latest-DEV.html`). They will appear under the matching env tab, and `/r/DEV/latest` will point at the newest upload.
 
 ## API
 
@@ -48,8 +49,9 @@ After deploy, open the site and upload files from `samples/` (for example `lates
 |--------|------|-------------|
 | `POST` | `/api/upload` | Multipart form: `file` (required), `env` (`TST` \| `DEV`, optional if detectable from filename) |
 | `GET` | `/api/reports?env=TST` | List reports for an environment |
-| `GET` | `/r/{ENV}/latest` | Render latest HTML report |
-| `GET` | `/r/{ENV}/{filename}.html` | Render a specific report |
+| `DELETE` | `/api/reports/delete` | JSON `{ "pathname": "reports/DEV/...." }` — delete one report blob |
+| `GET` | `/r/{ENV}/latest` | Render latest HTML report (with group/sort toolbar) |
+| `GET` | `/r/{ENV}/{filename}.html` | Render a specific report (with group/sort toolbar) |
 
 ## Notes
 

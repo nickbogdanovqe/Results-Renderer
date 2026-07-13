@@ -1,4 +1,5 @@
 import { getBlobToken, getReportHtml } from "@/lib/blob";
+import { enhanceReportHtml } from "@/lib/enhance-report";
 import { viewerPathToBlobPath } from "@/lib/env";
 
 export const runtime = "nodejs";
@@ -27,7 +28,9 @@ export async function GET(_request: Request, { params }: RouteParams) {
     });
   }
 
-  return new Response(report.body, {
+  const body = enhanceReportHtml(report.body);
+
+  return new Response(body, {
     status: 200,
     headers: {
       "content-type": "text/html; charset=utf-8",

@@ -22,6 +22,7 @@ export default function HomePage() {
   const [message, setMessage] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [copiedPath, setCopiedPath] = useState<string | null>(null);
+  const [deletingPath, setDeletingPath] = useState<string | null>(null);
 
   const loadReports = useCallback(async (selected: ReportEnv) => {
     setLoading(true);
@@ -88,6 +89,31 @@ export default function HomePage() {
       window.setTimeout(() => setCopiedPath(null), 1500);
     },
     [shareUrl],
+  );
+
+  const deleteReport = useCallback(
+    async (pathname: string, label: string) => {
+      if (!window.confirm(`Delete report "${label}"? This cannot be undone.`)) return;
+      setDeletingPath(pathname);
+      setError(null);
+      setMessage(null);
+      try {
+        const res = await fetch("/api/reports/delete", {
+          method: "DELETE",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ pathname }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Delete failed");
+        setMessage(`Deleted ${label}`);
+        await loadReports(env);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Delete failed");
+      } finally {
+        setDeletingPath(null);
+      }
+    },
+    [env, loadReports],
   );
 
   const emptyHint = useMemo(() => {
@@ -200,6 +226,14 @@ export default function HomePage() {
                 </a>
                 <button type="button" style={styles.secondaryBtn} onClick={() => void copyLink(report.sharePath)}>
                   {copiedPath === report.sharePath ? "Copied" : "Copy link"}
+                </button>
+                <button
+                  type="button"
+                  style={styles.dangerBtn}
+                  disabled={deletingPath === report.pathname}
+                  onClick={() => void deleteReport(report.pathname, report.label)}
+                >
+                  {deletingPath === report.pathname ? "Deleting…" : "Delete"}
                 </button>
               </div>
             </li>
@@ -338,6 +372,16 @@ const styles: Record<string, CSSProperties> = {
     background: "#fff",
     borderRadius: 8,
     padding: "0.4rem 0.75rem",
+    cursor: "pointer",
+    fontWeight: 600,
+    fontSize: "0.9rem",
+  },
+  dangerBtn: {
+    border: "none",
+    background: "transparent",
+    color: "var(--danger)",
+    borderRadius: 8,
+    padding: "0.4rem 0.55rem",
     cursor: "pointer",
     fontWeight: 600,
     fontSize: "0.9rem",

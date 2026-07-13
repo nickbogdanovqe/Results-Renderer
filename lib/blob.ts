@@ -1,6 +1,7 @@
-import { list, put, head } from "@vercel/blob";
+import { list, put, head, del } from "@vercel/blob";
 import type { ReportEnv } from "./env";
 import { blobPrefix, blobPathToSharePath, latestBlobPath, timestampedBlobPath } from "./env";
+
 
 export type ReportItem = {
   pathname: string;
@@ -100,4 +101,17 @@ export async function getReportHtml(pathname: string): Promise<{
     body,
     contentType: res.headers.get("content-type") ?? "text/html; charset=utf-8",
   };
+}
+
+/** Path must be reports/{TST|DEV}/....html with no traversal. */
+export function isDeletableReportPath(pathname: string): boolean {
+  if (!pathname || pathname.includes("..") || pathname.includes("\\")) return false;
+  return /^reports\/(TST|DEV)\/[^/]+\.html$/i.test(pathname);
+}
+
+export async function deleteReport(pathname: string): Promise<void> {
+  if (!isDeletableReportPath(pathname)) {
+    throw new Error("Invalid report pathname");
+  }
+  await del(pathname, tokenOptions());
 }
