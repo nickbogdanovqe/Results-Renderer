@@ -1,4 +1,4 @@
-import { getReportHtml } from "@/lib/blob";
+import { getBlobToken, getReportHtml } from "@/lib/blob";
 import { viewerPathToBlobPath } from "@/lib/env";
 
 export const runtime = "nodejs";
@@ -12,8 +12,8 @@ export async function GET(_request: Request, { params }: RouteParams) {
     return new Response("Not found", { status: 404, headers: { "content-type": "text/plain" } });
   }
 
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    return new Response("BLOB_READ_WRITE_TOKEN is not configured", {
+  if (!getBlobToken()) {
+    return new Response("RESULTS_READ_WRITE_TOKEN or BLOB_READ_WRITE_TOKEN is not configured", {
       status: 500,
       headers: { "content-type": "text/plain" },
     });

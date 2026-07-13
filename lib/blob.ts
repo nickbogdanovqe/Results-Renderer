@@ -12,6 +12,16 @@ export type ReportItem = {
   isLatest: boolean;
 };
 
+/** Prefer RESULTS_* (custom Blob prefix) then default BLOB_READ_WRITE_TOKEN. */
+export function getBlobToken(): string | undefined {
+  return process.env.RESULTS_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN;
+}
+
+function tokenOptions() {
+  const token = getBlobToken();
+  return token ? { token } : {};
+}
+
 export async function uploadReport(params: {
   env: ReportEnv;
   filename: string;
@@ -24,6 +34,7 @@ export async function uploadReport(params: {
     contentType: params.contentType ?? "text/html; charset=utf-8",
     addRandomSuffix: false,
     allowOverwrite: false,
+    ...tokenOptions(),
   });
 
   await put(latestBlobPath(params.env), params.body, {
@@ -31,6 +42,7 @@ export async function uploadReport(params: {
     contentType: params.contentType ?? "text/html; charset=utf-8",
     addRandomSuffix: false,
     allowOverwrite: true,
+    ...tokenOptions(),
   });
 
   const sharePath = blobPathToSharePath(uploaded.pathname) ?? `/r/${params.env}/latest`;
@@ -44,7 +56,7 @@ export async function uploadReport(params: {
 
 export async function listReports(env: ReportEnv): Promise<ReportItem[]> {
   const prefix = blobPrefix(env);
-  const result = await list({ prefix });
+  const result = await list({ prefix, ...tokenOptions() });
   const items: ReportItem[] = result.blobs
     .filter((b) => b.pathname.toLowerCase().endsWith(".html"))
     .map((b) => {
@@ -75,7 +87,7 @@ export async function getReportHtml(pathname: string): Promise<{
 } | null> {
   let url: string;
   try {
-    const meta = await head(pathname);
+    const meta = await head(pathname, tokenOptions());
     url = meta.url;
   } catch {
     return null;

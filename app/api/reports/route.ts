@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { listReports } from "@/lib/blob";
+import { getBlobToken, listReports } from "@/lib/blob";
 import { isReportEnv } from "@/lib/env";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  if (!getBlobToken()) {
     return NextResponse.json(
-      { error: "BLOB_READ_WRITE_TOKEN is not configured" },
+      { error: "RESULTS_READ_WRITE_TOKEN or BLOB_READ_WRITE_TOKEN is not configured" },
       { status: 500 },
     );
   }

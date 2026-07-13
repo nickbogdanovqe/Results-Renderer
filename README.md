@@ -19,7 +19,7 @@ Hosted entirely on **Vercel Hobby** with **Vercel Blob**. No other services.
 ```bash
 npm install
 cp .env.example .env.local
-# paste your Blob token into BLOB_READ_WRITE_TOKEN
+# paste RESULTS_READ_WRITE_TOKEN (or BLOB_READ_WRITE_TOKEN) from Vercel
 npm run dev
 ```
 
@@ -31,8 +31,10 @@ Sample reports live in [`samples/`](samples/) — upload them from the UI after 
 
 1. Push this repo to GitHub (or GitLab / Bitbucket).
 2. Go to [vercel.com/new](https://vercel.com/new) and import the repo.
-3. In the Vercel project: **Storage → Create → Blob**, then connect it to the project.
-   - This sets `BLOB_READ_WRITE_TOKEN` automatically.
+3. In the Vercel project: **Storage → Create → Blob**, choose **Public** access, then connect it to the project.
+   - If you use a custom prefix (e.g. `RESULTS_`), you will get `RESULTS_READ_WRITE_TOKEN`.
+   - Default prefix gives `BLOB_READ_WRITE_TOKEN`.
+   - This app accepts either.
 4. Redeploy if the first deploy ran before Blob was connected.
 5. Open your `*.vercel.app` URL and upload a report.
 
@@ -53,3 +55,5 @@ After deploy, open the site and upload files from `samples/` (for example `lates
 
 - Hobby Blob storage has a free monthly allowance; HTML reports are typically tens of KB each.
 - There is no authentication — treat the deployment URL as a shared team link.
+- Use a **public** Blob store with this app (`access: "public"`). Private stores need a different SDK version/flow.
+- `RESULTS_STORE_ID` / `RESULTS_WEBHOOK_PUBLIC_KEY` are unused by the app; only the read-write token is required.

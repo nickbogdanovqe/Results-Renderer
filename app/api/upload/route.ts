@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { uploadReport } from "@/lib/blob";
+import { getBlobToken, uploadReport } from "@/lib/blob";
 import {
   detectEnvFromFilename,
   isReportEnv,
@@ -10,9 +10,9 @@ import {
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  if (!process.env.BLOB_READ_WRITE_TOKEN) {
+  if (!getBlobToken()) {
     return NextResponse.json(
-      { error: "BLOB_READ_WRITE_TOKEN is not configured" },
+      { error: "RESULTS_READ_WRITE_TOKEN or BLOB_READ_WRITE_TOKEN is not configured" },
       { status: 500 },
     );
   }
